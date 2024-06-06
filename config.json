@@ -1,0 +1,7 @@
+{
+    "vaultAddress": "0x1234123412341234123412341234123412341234",
+    "vaultDecimals": 18,
+    "RpcEndpoint": "https://sepolia.base.org/",
+    "PrivateKey": "0x1234123412341234123412341234123412341234123412341234123412341234",
+    "ChainId": 85432
+}
