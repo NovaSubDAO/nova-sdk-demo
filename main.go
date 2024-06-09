@@ -26,7 +26,8 @@ type (
 	}
 
 	SlippagePostParams struct {
-		Amount string `json:"amount" validate:"required"`
+		Amount  string `json:"amount" validate:"required"`
+		Address string `json:"address" validate:"required,address"`
 	}
 
 	CreateDepositTransactionParams struct {
@@ -179,7 +180,9 @@ func main() {
 			})
 		}
 
-		slippage, err := client.SdkDomain.GetSlippage(big.NewInt(int64(amount)))
+		address := common.HexToAddress(params.Address)
+
+		slippage, err := client.SdkDomain.GetSlippage(address, big.NewInt(int64(amount)))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())

@@ -25,7 +25,10 @@ export default function SDKDeposit(props: SDKDepositProps) {
     useEffect(() => {
         fetch(`${props.baseUri}/slippage`, {
             method: "POST",
-            body: JSON.stringify({amount: amount.toString()})
+            body: JSON.stringify({
+                amount: amount.toString(),
+                address: account.address
+            })
         }).then(data => data.json()).then(data => {
             setSlippage(parseFloat(data.slippage))
         }).catch(() => {
