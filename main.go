@@ -16,6 +16,8 @@ import (
 )
 
 const REFERRAL_CODE = 1337
+const ETH_URL = "https://rpc.ankr.com/eth"
+const ETH_CHAINID = 1
 
 type (
 	PositionPostParams struct {
@@ -27,6 +29,12 @@ type (
 	}
 
 	CreateDepositTransactionParams struct {
+		From   string `json:"from" validate:"required,address"`
+		Token  string `json:"token" validate:"required,address"`
+		Amount string `json:"amount" validate:"required"`
+	}
+
+	CreateWithdrawTransactionParams struct {
 		From   string `json:"from" validate:"required,address"`
 		Token  string `json:"token" validate:"required,address"`
 		Amount string `json:"amount" validate:"required"`
@@ -107,12 +115,11 @@ func main() {
 		AllowPrivateNetwork: true,
 	}))
 
-	// FIXME: where do I put RPC?
-	// NOTE: .........................vault address
-	client, err := sdk.NewNovaSDK("https://rpc.ankr.com/eth", 1)
+	client, err := sdk.NewNovaSDK(ETH_URL, ETH_CHAINID)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	log.Printf("Connected to chainid '%d' with RPC %s\n", ETH_CHAINID, ETH_URL)
 
 	app.Get("/price", func(c fiber.Ctx) error {
 		number, err := client.SdkDomain.GetPrice()
@@ -207,7 +214,44 @@ func main() {
 		})
 
 	})
+
 	//CreateWithdrawTransaction(common.Address, common.Address, *big.Int, *big.Int) (string, error)
+	app.Post("/withdraw", func(c fiber.Ctx) error {
+		params := CreateWithdrawTransactionParams{
+			From:   c.FormValue("from"),
+			Token:  c.FormValue("token"),
+			Amount: c.FormValue("amount"),
+		}
+		// Validation
+		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
+			return MakeErrors(errs)
+		}
+
+		amount, err := strconv.ParseUint(params.Amount, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid amount",
+			})
+		}
+
+		from := common.HexToAddress(params.From)
+		token := common.HexToAddress(params.Token)
+
+		calldata, err := client.SdkDomain.CreateWithdrawTransaction(
+			from,
+			token,
+			big.NewInt(int64(amount)),
+			big.NewInt(REFERRAL_CODE),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(fiber.Map{
+			"calldata": calldata,
+		})
+	})
 
 	app.Static("/", "./public")
 
