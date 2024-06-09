@@ -71,5 +71,6 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
     return <div>
         <input type="text" onChange={captureInput} />
         <button onClick={createWithdrawTransaction(amount)}>Create withdrawal transaction for {amount}</button>
+        <span>Slippage: {slippage}</span>
     </div>
 }

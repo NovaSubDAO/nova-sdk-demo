@@ -71,5 +71,6 @@ export default function SDKDeposit(props: SDKDepositProps) {
     return <div>
         <input type="text" onChange={captureInput} />
         <button onClick={createDepositTransaction(amount)}>Create deposit transaction for {amount}</button>
+        <span>Slippage: {slippage}</span>
     </div>
 }
