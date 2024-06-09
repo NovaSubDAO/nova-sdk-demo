@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"example/hello/util"
 	"fmt"
 	"log"
@@ -121,25 +122,31 @@ func main() {
 	}
 	log.Printf("Connected to chainid '%d' with RPC %s\n", ETH_CHAINID, ETH_URL)
 
-	app.Get("/price", func(c fiber.Ctx) error {
+	app.Get("/main/price", func(c fiber.Ctx) error {
 		number, err := client.SdkDomain.GetPrice()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
-		return c.SendString(
-			util.ToDecimal(number, 18).String(),
-		)
+		return c.JSON(fiber.Map{
+			"price": util.ToDecimal(number, 18).String(),
+		})
 	})
 
-	app.Post("/position", func(c fiber.Ctx) error {
-		address := c.FormValue("address")
-		params := PositionPostParams{Address: c.FormValue("address")}
+	app.Post("/main/position", func(c fiber.Ctx) error {
+		params := new(PositionPostParams)
+		if err := json.Unmarshal(c.Body(), params); err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid request body",
+			})
+		}
+
 		// Validation
 		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
 			return MakeErrors(errs)
 		}
 
-		addr := common.HexToAddress(address)
+		addr := common.HexToAddress(params.Address)
 
 		number, err := client.SdkDomain.GetPosition(addr)
 		if err != nil {
@@ -151,8 +158,15 @@ func main() {
 		})
 	})
 
-	app.Post("/slippage", func(c fiber.Ctx) error {
-		params := SlippagePostParams{Amount: c.FormValue("amount")}
+	app.Post("/main/slippage", func(c fiber.Ctx) error {
+		params := new(SlippagePostParams)
+		if err := json.Unmarshal(c.Body(), params); err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid request body",
+			})
+		}
+
 		// Validation
 		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
 			return MakeErrors(errs)
@@ -177,11 +191,14 @@ func main() {
 	})
 
 	//CreateDepositTransaction(common.Address, common.Address, *big.Int, *big.Int) (string, error)
-	app.Post("/deposit", func(c fiber.Ctx) error {
-		params := CreateDepositTransactionParams{
-			From:   c.FormValue("from"),
-			Token:  c.FormValue("token"),
-			Amount: c.FormValue("amount"),
+	app.Post("/main/createDepositTx", func(c fiber.Ctx) error {
+		params := new(CreateDepositTransactionParams)
+		log.Println(string(c.Body()))
+		if err := json.Unmarshal(c.Body(), params); err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid request body",
+			})
 		}
 		// Validation
 		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
@@ -216,11 +233,14 @@ func main() {
 	})
 
 	//CreateWithdrawTransaction(common.Address, common.Address, *big.Int, *big.Int) (string, error)
-	app.Post("/withdraw", func(c fiber.Ctx) error {
-		params := CreateWithdrawTransactionParams{
-			From:   c.FormValue("from"),
-			Token:  c.FormValue("token"),
-			Amount: c.FormValue("amount"),
+	app.Post("/main/createWithdrawTx", func(c fiber.Ctx) error {
+		params := new(CreateWithdrawTransactionParams)
+		log.Println(string(c.Body()))
+		if err := json.Unmarshal(c.Body(), params); err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid request body",
+			})
 		}
 		// Validation
 		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
