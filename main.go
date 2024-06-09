@@ -19,6 +19,8 @@ import (
 const REFERRAL_CODE = 1337
 const ETH_URL = "https://rpc.ankr.com/eth"
 const ETH_CHAINID = 1
+const OPT_URL = "https://rpc.ankr.com/optimism"
+const OPT_CHAINID = 10
 
 type (
 	PositionPostParams struct {
@@ -117,14 +119,30 @@ func main() {
 		AllowPrivateNetwork: true,
 	}))
 
-	client, err := sdk.NewNovaSDK(ETH_URL, ETH_CHAINID)
+	ethClient, err := sdk.NewNovaSDK(ETH_URL, ETH_CHAINID)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	log.Printf("Connected to chainid '%d' with RPC %s\n", ETH_CHAINID, ETH_URL)
 
+	optClient, err := sdk.NewNovaSDK(OPT_URL, OPT_CHAINID)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	log.Printf("Connected to chainid '%d' with RPC %s\n", OPT_CHAINID, OPT_URL)
+
 	app.Get("/main/price", func(c fiber.Ctx) error {
-		number, err := client.SdkDomain.GetPrice()
+		number, err := ethClient.SdkDomain.GetPrice()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
+		}
+		return c.JSON(fiber.Map{
+			"price": util.ToDecimal(number, 18).String(),
+		})
+	})
+
+	app.Get("/opt/price", func(c fiber.Ctx) error {
+		number, err := optClient.SdkDomain.GetPrice()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -142,14 +160,38 @@ func main() {
 			})
 		}
 
-		// Validation
 		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
 			return MakeErrors(errs)
 		}
 
 		addr := common.HexToAddress(params.Address)
 
-		number, err := client.SdkDomain.GetPosition(addr)
+		number, err := ethClient.SdkDomain.GetPosition(addr)
+		if err != nil {
+			c.SendStatus(500)
+			return c.SendString(err.Error())
+		}
+		return c.JSON(fiber.Map{
+			"position": util.ToDecimal(number, 18).String(),
+		})
+	})
+
+	app.Post("/opt/position", func(c fiber.Ctx) error {
+		params := new(PositionPostParams)
+		if err := json.Unmarshal(c.Body(), params); err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid request body",
+			})
+		}
+
+		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
+			return MakeErrors(errs)
+		}
+
+		addr := common.HexToAddress(params.Address)
+
+		number, err := optClient.SdkDomain.GetPosition(addr)
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -168,7 +210,6 @@ func main() {
 			})
 		}
 
-		// Validation
 		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
 			return MakeErrors(errs)
 		}
@@ -182,7 +223,40 @@ func main() {
 
 		address := common.HexToAddress(params.Address)
 
-		slippage, err := client.SdkDomain.GetSlippage(address, big.NewInt(int64(amount)))
+		slippage, err := ethClient.SdkDomain.GetSlippage(address, big.NewInt(int64(amount)))
+		if err != nil {
+			c.SendStatus(500)
+			return c.SendString(err.Error())
+		}
+
+		return c.JSON(fiber.Map{
+			"slippage": util.ToDecimal(slippage, 18).String(),
+		})
+	})
+
+	app.Post("/opt/slippage", func(c fiber.Ctx) error {
+		params := new(SlippagePostParams)
+		if err := json.Unmarshal(c.Body(), params); err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid request body",
+			})
+		}
+
+		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
+			return MakeErrors(errs)
+		}
+
+		amount, err := strconv.ParseUint(params.Amount, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid amount",
+			})
+		}
+
+		address := common.HexToAddress(params.Address)
+
+		slippage, err := optClient.SdkDomain.GetSlippage(address, big.NewInt(int64(amount)))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -203,7 +277,7 @@ func main() {
 				Message: "Invalid request body",
 			})
 		}
-		// Validation
+
 		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
 			return MakeErrors(errs)
 		}
@@ -218,7 +292,7 @@ func main() {
 			})
 		}
 
-		calldata, err := client.SdkDomain.CreateDepositTransaction(
+		calldata, err := ethClient.SdkDomain.CreateDepositTransaction(
 			from,
 			token,
 			big.NewInt(int64(amount)),
@@ -235,6 +309,46 @@ func main() {
 
 	})
 
+	app.Post("/opt/createDepositTx", func(c fiber.Ctx) error {
+		params := new(CreateDepositTransactionParams)
+		log.Println(string(c.Body()))
+		if err := json.Unmarshal(c.Body(), params); err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid request body",
+			})
+		}
+
+		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
+			return MakeErrors(errs)
+		}
+
+		from := common.HexToAddress(params.From)
+		token := common.HexToAddress(params.Token)
+
+		amount, err := strconv.ParseUint(params.Amount, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid amount",
+			})
+		}
+
+		calldata, err := optClient.SdkDomain.CreateDepositTransaction(
+			from,
+			token,
+			big.NewInt(int64(amount)),
+			big.NewInt(REFERRAL_CODE),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(fiber.Map{
+			"calldata": calldata,
+		})
+	})
+
 	//CreateWithdrawTransaction(common.Address, common.Address, *big.Int, *big.Int) (string, error)
 	app.Post("/main/createWithdrawTx", func(c fiber.Ctx) error {
 		params := new(CreateWithdrawTransactionParams)
@@ -245,7 +359,7 @@ func main() {
 				Message: "Invalid request body",
 			})
 		}
-		// Validation
+
 		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
 			return MakeErrors(errs)
 		}
@@ -260,7 +374,47 @@ func main() {
 		from := common.HexToAddress(params.From)
 		token := common.HexToAddress(params.Token)
 
-		calldata, err := client.SdkDomain.CreateWithdrawTransaction(
+		calldata, err := ethClient.SdkDomain.CreateWithdrawTransaction(
+			from,
+			token,
+			big.NewInt(int64(amount)),
+			big.NewInt(REFERRAL_CODE),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(fiber.Map{
+			"calldata": calldata,
+		})
+	})
+
+	app.Post("/opt/createWithdrawTx", func(c fiber.Ctx) error {
+		params := new(CreateWithdrawTransactionParams)
+		log.Println(string(c.Body()))
+		if err := json.Unmarshal(c.Body(), params); err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid request body",
+			})
+		}
+
+		if errs := myValidator.Validate(params); len(errs) > 0 && errs[0].Error {
+			return MakeErrors(errs)
+		}
+
+		amount, err := strconv.ParseUint(params.Amount, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
+				Message: "Invalid amount",
+			})
+		}
+
+		from := common.HexToAddress(params.From)
+		token := common.HexToAddress(params.Token)
+
+		calldata, err := optClient.SdkDomain.CreateWithdrawTransaction(
 			from,
 			token,
 			big.NewInt(int64(amount)),
