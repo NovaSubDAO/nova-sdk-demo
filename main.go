@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/NovaSubDAO/nova-sdk/go/pkg/constants"
 	"github.com/NovaSubDAO/nova-sdk/go/pkg/sdk"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-playground/validator"
@@ -24,24 +25,25 @@ const OPT_CHAINID = 10
 
 type (
 	PositionPostParams struct {
-		Address string `json:"address" validate:"required,address"`
+		Stablecoin constants.Stablecoin `json:"stablecoin" validate:"required"`
+		Address    string               `json:"address" validate:"required,address"`
 	}
 
 	SlippagePostParams struct {
-		Amount  string `json:"amount" validate:"required"`
-		Address string `json:"address" validate:"required,address"`
+		InputToken constants.Stablecoin `json:"inputToken" validate:"required"`
+		Amount     string               `json:"amount" validate:"required"`
 	}
 
 	CreateDepositTransactionParams struct {
-		From   string `json:"from" validate:"required,address"`
-		Token  string `json:"token" validate:"required,address"`
-		Amount string `json:"amount" validate:"required"`
+		From   string               `json:"from" validate:"required,address"`
+		Token  constants.Stablecoin `json:"token" validate:"required"`
+		Amount string               `json:"amount" validate:"required"`
 	}
 
 	CreateWithdrawTransactionParams struct {
-		From   string `json:"from" validate:"required,address"`
-		Token  string `json:"token" validate:"required,address"`
-		Amount string `json:"amount" validate:"required"`
+		From   string               `json:"from" validate:"required,address"`
+		Token  constants.Stablecoin `json:"token" validate:"required"`
+		Amount string               `json:"amount" validate:"required"`
 	}
 
 	ErrorResponse struct {
@@ -132,7 +134,7 @@ func main() {
 	log.Printf("Connected to chainid '%d' with RPC %s\n", OPT_CHAINID, OPT_URL)
 
 	app.Get("/main/price", func(c fiber.Ctx) error {
-		number, err := ethClient.SdkDomain.GetPrice()
+		number, err := ethClient.SdkDomain.GetPrice(constants.DAI)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -142,7 +144,7 @@ func main() {
 	})
 
 	app.Get("/opt/price", func(c fiber.Ctx) error {
-		number, err := optClient.SdkDomain.GetPrice()
+		number, err := optClient.SdkDomain.GetPrice(constants.DAI)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -166,7 +168,7 @@ func main() {
 
 		addr := common.HexToAddress(params.Address)
 
-		number, err := ethClient.SdkDomain.GetPosition(addr)
+		number, err := ethClient.SdkDomain.GetPosition(params.Stablecoin, addr)
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -191,7 +193,7 @@ func main() {
 
 		addr := common.HexToAddress(params.Address)
 
-		number, err := optClient.SdkDomain.GetPosition(addr)
+		number, err := optClient.SdkDomain.GetPosition(params.Stablecoin, addr)
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -214,23 +216,21 @@ func main() {
 			return MakeErrors(errs)
 		}
 
-		amount, err := strconv.ParseUint(params.Amount, 10, 64)
+		amount, err := strconv.ParseFloat(params.Amount, 64)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
 				Message: "Invalid amount",
 			})
 		}
 
-		address := common.HexToAddress(params.Address)
-
-		slippage, err := ethClient.SdkDomain.GetSlippage(address, big.NewInt(int64(amount)))
+		slippage, err := ethClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, 18))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
 		}
 
 		return c.JSON(fiber.Map{
-			"slippage": util.ToDecimal(slippage, 18).String(),
+			"slippage": slippage,
 		})
 	})
 
@@ -247,23 +247,21 @@ func main() {
 			return MakeErrors(errs)
 		}
 
-		amount, err := strconv.ParseUint(params.Amount, 10, 64)
+		amount, err := strconv.ParseFloat(params.Amount, 64)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
 				Message: "Invalid amount",
 			})
 		}
 
-		address := common.HexToAddress(params.Address)
-
-		slippage, err := optClient.SdkDomain.GetSlippage(address, big.NewInt(int64(amount)))
+		slippage, err := optClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, 18))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
 		}
 
 		return c.JSON(fiber.Map{
-			"slippage": util.ToDecimal(slippage, 18).String(),
+			"slippage": slippage,
 		})
 	})
 
@@ -283,7 +281,6 @@ func main() {
 		}
 
 		from := common.HexToAddress(params.From)
-		token := common.HexToAddress(params.Token)
 
 		amount, err := strconv.ParseUint(params.Amount, 10, 64)
 		if err != nil {
@@ -293,8 +290,8 @@ func main() {
 		}
 
 		calldata, err := ethClient.SdkDomain.CreateDepositTransaction(
+			params.Token,
 			from,
-			token,
 			big.NewInt(int64(amount)),
 			big.NewInt(REFERRAL_CODE),
 		)
@@ -324,7 +321,6 @@ func main() {
 		}
 
 		from := common.HexToAddress(params.From)
-		token := common.HexToAddress(params.Token)
 
 		amount, err := strconv.ParseUint(params.Amount, 10, 64)
 		if err != nil {
@@ -334,8 +330,8 @@ func main() {
 		}
 
 		calldata, err := optClient.SdkDomain.CreateDepositTransaction(
+			params.Token,
 			from,
-			token,
 			big.NewInt(int64(amount)),
 			big.NewInt(REFERRAL_CODE),
 		)
@@ -372,11 +368,10 @@ func main() {
 		}
 
 		from := common.HexToAddress(params.From)
-		token := common.HexToAddress(params.Token)
 
 		calldata, err := ethClient.SdkDomain.CreateWithdrawTransaction(
+			params.Token,
 			from,
-			token,
 			big.NewInt(int64(amount)),
 			big.NewInt(REFERRAL_CODE),
 		)
@@ -412,11 +407,10 @@ func main() {
 		}
 
 		from := common.HexToAddress(params.From)
-		token := common.HexToAddress(params.Token)
 
 		calldata, err := optClient.SdkDomain.CreateWithdrawTransaction(
+			params.Token,
 			from,
-			token,
 			big.NewInt(int64(amount)),
 			big.NewInt(REFERRAL_CODE),
 		)

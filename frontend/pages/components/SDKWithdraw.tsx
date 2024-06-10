@@ -1,5 +1,6 @@
 import { InputHTMLAttributes, useEffect, useState } from "react"
 import { useAccount, useSendTransaction } from "wagmi"
+import SelectStablecoin from "./SelectStablecoin"
 
 interface CalldataResponse {
     calldata: {
@@ -18,6 +19,7 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
     const account = useAccount()
     const transactor = useSendTransaction()
 
+    const [selectedCoin, setSelectedCoin] = useState<string>("")
     const [slippage, setSlippage] = useState<number>(0)
     const [amount, setAmount] = useState<number>(0)
     const [price, setPrice] = useState<number>(0)
@@ -27,7 +29,9 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
             method: "POST",
             body: JSON.stringify({
                 amount: amount.toString(),
-                address: account.address
+                address: account.address,
+                // FIXME: should be outputToken
+                inputToken: selectedCoin
             })
         }).then(data => data.json()).then(data => {
             setSlippage(parseFloat(data.slippage))
@@ -51,7 +55,7 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
                 body: JSON.stringify({
                     amount: amount.toString(),
                     from: account.address,
-                    token: '0x0000000000000000000000000000000000000000'
+                    token: selectedCoin
                 })
             }).then(res => res.json()).then(data => ({calldata: JSON.parse(data.calldata)})) as CalldataResponse
 
@@ -68,9 +72,11 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
         }
     }
     
-    return <div>
+    return <div className="card" style={({border: "1px solid #f0c", borderRadius: "1em", padding: "1em"})}>
+        <h3>Withdraw</h3>
+        <SelectStablecoin onSelect={setSelectedCoin} />
         <input type="text" onChange={captureInput} />
-        <button onClick={createWithdrawTransaction(amount)}>Create withdrawal transaction for {amount}</button>
-        <span>Slippage: {slippage}</span>
+        <button onClick={createWithdrawTransaction(amount)}>Withdraw {amount} sDAI receiving {selectedCoin}</button>
+        <p>Slippage: {slippage}</p>
     </div>
 }

@@ -1,5 +1,6 @@
 import { InputHTMLAttributes, useEffect, useState } from "react"
 import { useAccount, useSendTransaction } from "wagmi"
+import SelectStablecoin from "./SelectStablecoin"
 
 interface CalldataResponse {
     calldata: {
@@ -20,6 +21,7 @@ export default function SDKDeposit(props: SDKDepositProps) {
 
     const [slippage, setSlippage] = useState<number>(0)
     const [amount, setAmount] = useState<number>(0)
+    const [selectedCoin, setSelectedCoin] = useState<string>("")
     const [price, setPrice] = useState<number>(0)
 
     useEffect(() => {
@@ -27,7 +29,8 @@ export default function SDKDeposit(props: SDKDepositProps) {
             method: "POST",
             body: JSON.stringify({
                 amount: amount.toString(),
-                address: account.address
+                address: account.address,
+                inputToken: selectedCoin
             })
         }).then(data => data.json()).then(data => {
             setSlippage(parseFloat(data.slippage))
@@ -51,7 +54,7 @@ export default function SDKDeposit(props: SDKDepositProps) {
                 body: JSON.stringify({
                     amount: amount.toString(),
                     from: account.address,
-                    token: '0x0000000000000000000000000000000000000000'
+                    token: selectedCoin
                 })
             }).then(res => res.json()).then(data => ({calldata: JSON.parse(data.calldata)})) as CalldataResponse
 
@@ -68,9 +71,11 @@ export default function SDKDeposit(props: SDKDepositProps) {
         }
     }
     
-    return <div>
+    return <div className="card" style={({border: "1px solid #f0c", borderRadius: "1em", padding: "1em"})}>
+        <h3>Deposit</h3>
+        <SelectStablecoin onSelect={setSelectedCoin} />
         <input type="text" onChange={captureInput} />
-        <button onClick={createDepositTransaction(amount)}>Create deposit transaction for {amount}</button>
-        <span>Slippage: {slippage}</span>
+        <button onClick={createDepositTransaction(amount)}>Deposit {amount} {selectedCoin} for sDAI</button>
+        <p>Slippage: {slippage}</p>
     </div>
 }
