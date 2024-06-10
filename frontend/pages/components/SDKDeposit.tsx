@@ -38,7 +38,7 @@ export default function SDKDeposit(props: SDKDepositProps) {
             console.error("Failed to fetch slippage, defaulting to zero.")
             setSlippage(0)
         })
-    }, [props.baseUri, amount])
+    }, [props.baseUri, amount, selectedCoin])
 
     function captureInput(evt: Parameters<NonNullable<InputHTMLAttributes<HTMLInputElement>['onChange']>>[0]) {
         setAmount(parseFloat(evt.target.value) || 0)
