@@ -1,7 +1,9 @@
-public/index.html:
-	cd frontend && pnpm i && pnpm build && cp -r out/* ../public/
+.PHONY: public
 
-run: public/index.html
+public:
+	mkdir -p public && cd frontend && pnpm i && pnpm build && cp -r out/* ../public/
+
+run: public
 	go run main.go
 
 clean:

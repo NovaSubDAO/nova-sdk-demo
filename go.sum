@@ -16,6 +16,8 @@ github.com/NovaSubDAO/nova-sdk/go v0.0.0-20240609014309-e89b83f83c44 h1:LGIMFwIc
 github.com/NovaSubDAO/nova-sdk/go v0.0.0-20240609014309-e89b83f83c44/go.mod h1:SW0GnUANQU1Ma08QczbkaY/EuT1eOSQSuV6FQgLwCBU=
 github.com/NovaSubDAO/nova-sdk/go v0.0.0-20240609132021-c069e1e3a743 h1:puYL7jcocTWAjecK2AA69zSRhEmf5xUjGrhRhIloFdM=
 github.com/NovaSubDAO/nova-sdk/go v0.0.0-20240609132021-c069e1e3a743/go.mod h1:SW0GnUANQU1Ma08QczbkaY/EuT1eOSQSuV6FQgLwCBU=
+github.com/NovaSubDAO/nova-sdk/go v0.0.0-20240609214544-3710b024e627 h1:WTHu8oE0P+0RMsPTom2THQ5YVPbgMDiTiUsa0r6XrQM=
+github.com/NovaSubDAO/nova-sdk/go v0.0.0-20240609214544-3710b024e627/go.mod h1:SW0GnUANQU1Ma08QczbkaY/EuT1eOSQSuV6FQgLwCBU=
 github.com/StackExchange/wmi v1.2.1 h1:VIkavFPXSjcnS+O8yTq7NI32k0R5Aj+v39y29VYDOSA=
 github.com/StackExchange/wmi v1.2.1/go.mod h1:rcmrprowKIVzvc+NUiLncP2uuArMWLCbu9SBzvHz7e8=
 github.com/andybalholm/brotli v1.1.0 h1:eLKJA0d02Lf0mVpIDgYnqXcUn0GqVmEFny3VuID1U3M=
