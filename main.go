@@ -133,6 +133,28 @@ func main() {
 	}
 	log.Printf("Connected to chainid '%d' with RPC %s\n", OPT_CHAINID, OPT_URL)
 
+	app.Get("/main/canonicalPrice", func(c fiber.Ctx) error {
+		// NOTE: Get the canonical price from Mainnet.
+		price, err := ethClient.SdkDomain.GetSDaiPrice()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
+		}
+		return c.JSON(fiber.Map{
+			"price": util.ToDecimal(price, 18).String(),
+		})
+	})
+
+	app.Get("/opt/canonicalPrice", func(c fiber.Ctx) error {
+		// NOTE: Get the canonical price from Optimism.
+		price, err := optClient.SdkDomain.GetSDaiPrice()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
+		}
+		return c.JSON(fiber.Map{
+			"price": util.ToDecimal(price, 18).String(),
+		})
+	})
+
 	app.Get("/main/price", func(c fiber.Ctx) error {
 		number, err := ethClient.SdkDomain.GetPrice(constants.DAI)
 		if err != nil {
