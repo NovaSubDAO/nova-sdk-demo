@@ -156,7 +156,7 @@ func main() {
 	})
 
 	app.Get("/main/price", func(c fiber.Ctx) error {
-		number, err := ethClient.SdkDomain.GetPrice(constants.DAI)
+		number, err := ethClient.SdkDomain.GetPrice(constants.USDC)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -166,7 +166,7 @@ func main() {
 	})
 
 	app.Get("/opt/price", func(c fiber.Ctx) error {
-		number, err := optClient.SdkDomain.GetPrice(constants.DAI)
+		number, err := optClient.SdkDomain.GetPrice(constants.USDC)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
