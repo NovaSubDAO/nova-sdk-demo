@@ -171,7 +171,7 @@ func main() {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
 		return c.JSON(fiber.Map{
-			"price": util.ToDecimal(number, 18).String(),
+			"price": util.ToDecimal(number, 6).String(),
 		})
 	})
 
