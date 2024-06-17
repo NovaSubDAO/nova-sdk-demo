@@ -19,8 +19,7 @@ export default function SDKStats(props: SDKStatsProps) {
         fetch(`${props.baseUri}/position`, {
             method: "POST",
             body: JSON.stringify({
-                address: account.address,
-                stablecoin: "USDC"
+                address: account.address
             })
         }).then(data => data.json()).then(data => {
             console.log("position", data)

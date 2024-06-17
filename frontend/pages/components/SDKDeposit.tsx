@@ -23,6 +23,13 @@ export default function SDKDeposit(props: SDKDepositProps) {
     const [amount, setAmount] = useState<number>(0)
     const [selectedCoin, setSelectedCoin] = useState<string>("")
     const [price, setPrice] = useState<number>(0)
+    const [supportedStablecoins, setSupportedStablecoins] = useState<string[]>([])
+
+    useEffect(() => {
+        fetch(`${props.baseUri}/supportedStablecoins`).then(data => data.json()).then(data => {
+            setSupportedStablecoins(data)
+        })
+    }, [props.baseUri])
 
     useEffect(() => {
         fetch(`${props.baseUri}/slippage`, {
@@ -73,7 +80,7 @@ export default function SDKDeposit(props: SDKDepositProps) {
     
     return <div className="card" style={({border: "1px solid #f0c", borderRadius: "1em", padding: "1em"})}>
         <h3>Deposit</h3>
-        <SelectStablecoin onSelect={setSelectedCoin} />
+        {supportedStablecoins && <SelectStablecoin onSelect={setSelectedCoin} supportedStablecoins={supportedStablecoins}/>}
         <input type="text" onChange={captureInput} />
         <button onClick={createDepositTransaction(amount)}>Deposit {amount} {selectedCoin} for sDAI</button>
         <p>Slippage: {slippage}</p>

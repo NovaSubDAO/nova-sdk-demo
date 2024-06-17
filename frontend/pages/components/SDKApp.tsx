@@ -23,9 +23,9 @@ export default function SDKApp(props: any) {
             connected to {account.chainId === 1? "mainnet": "optimism"}
             <span>{props.address}</span>
             {baseUri && <>
-                <SDKStats baseUri={baseUri} />
-                <SDKDeposit baseUri={baseUri} />
-                <SDKWithdraw baseUri={baseUri} />
+                {true && <SDKStats baseUri={baseUri} />}
+                {true && <SDKDeposit baseUri={baseUri} />}
+                {false && <SDKWithdraw baseUri={baseUri} />}
             </>}
         </div>
     )

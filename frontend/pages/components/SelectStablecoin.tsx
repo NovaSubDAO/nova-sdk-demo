@@ -19,18 +19,21 @@ const STABLECOINS = [
 ]
 
 interface SelectStablecoinProps {
-    onSelect: (stablecoin: string) => void
+    onSelect: (stablecoin: string) => void,
+    supportedStablecoins: string[]
 }
 
 export default function SelectStablecoin(props: SelectStablecoinProps) {
     useEffect(() => {
-        props.onSelect(STABLECOINS[0].name)
-    }, [])
-    
+        console.log("select stablecoins effect")
+        if (!props.supportedStablecoins) return
+        props.onSelect(props.supportedStablecoins[0])
+    }, [props.supportedStablecoins])
+
     return (
         <div>
             <div style={({display: "flex", flexBasis: "row", justifyContent: "space-around"})}>
-                {STABLECOINS.map((coin) => {
+                {STABLECOINS.filter(coin => (props.supportedStablecoins || []).includes(coin.name)).map((coin) => {
                     return (
                         <div key={coin.name} onClick={() => props.onSelect(coin.name)}>
                             <img src={coin.icon} alt={coin.name} height="22px"/>

@@ -23,6 +23,13 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
     const [slippage, setSlippage] = useState<number>(0)
     const [amount, setAmount] = useState<number>(0)
     const [price, setPrice] = useState<number>(0)
+    const [supportedStablecoins, setSupportedStablecoins] = useState<string[]>([])
+
+    useEffect(() => {
+        fetch(`${props.baseUri}/supportedStablecoins`).then(data => data.json()).then(data => {
+            setSupportedStablecoins(data)
+        })
+    }, [props.baseUri])
 
     useEffect(() => {
         fetch(`${props.baseUri}/slippage`, {
@@ -74,7 +81,7 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
     
     return <div className="card" style={({border: "1px solid #f0c", borderRadius: "1em", padding: "1em"})}>
         <h3>Withdraw</h3>
-        <SelectStablecoin onSelect={setSelectedCoin} />
+        {supportedStablecoins && <SelectStablecoin onSelect={setSelectedCoin} supportedStablecoins={supportedStablecoins}/>}
         <input type="text" onChange={captureInput} />
         <button onClick={createWithdrawTransaction(amount)}>Withdraw {amount} sDAI receiving {selectedCoin}</button>
         <p>Slippage: {slippage}</p>
