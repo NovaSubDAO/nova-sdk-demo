@@ -161,7 +161,7 @@ func main() {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
 		return c.JSON(fiber.Map{
-			"price": util.ToDecimal(number, 18).String(),
+			"price": util.ToDecimal(number, constants.StablecoinDetails[ETH_CHAINID][constants.DAI].Decimals).String(),
 		})
 	})
 
@@ -171,7 +171,7 @@ func main() {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
 		return c.JSON(fiber.Map{
-			"price": util.ToDecimal(number, 6).String(),
+			"price": util.ToDecimal(number, constants.StablecoinDetails[OPT_CHAINID][constants.USDC].Decimals).String(),
 		})
 	})
 
