@@ -261,7 +261,9 @@ func main() {
 			})
 		}
 
-		slippage, _, _, err := ethClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, 18))
+		tokenDecimals := constants.StablecoinDetails[ETH_CHAINID][params.InputToken].Decimals
+
+		slippage, _, _, err := ethClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, tokenDecimals))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -292,7 +294,9 @@ func main() {
 			})
 		}
 
-		slippage, _, _, err := optClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, 18))
+		tokenDecimals := constants.StablecoinDetails[OPT_CHAINID][params.InputToken].Decimals
+
+		slippage, _, _, err := optClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, tokenDecimals))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
