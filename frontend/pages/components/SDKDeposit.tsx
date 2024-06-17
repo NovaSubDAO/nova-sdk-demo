@@ -83,6 +83,6 @@ export default function SDKDeposit(props: SDKDepositProps) {
         {supportedStablecoins && <SelectStablecoin onSelect={setSelectedCoin} supportedStablecoins={supportedStablecoins}/>}
         <input type="text" onChange={captureInput} />
         <button onClick={createDepositTransaction(amount)}>Deposit {amount} {selectedCoin} for sDAI</button>
-        <p>Slippage: {slippage}</p>
+        <p>Slippage: {slippage.toFixed(2)}%</p>
     </div>
 }

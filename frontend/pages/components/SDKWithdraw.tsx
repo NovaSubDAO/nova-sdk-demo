@@ -84,6 +84,6 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
         {supportedStablecoins && <SelectStablecoin onSelect={setSelectedCoin} supportedStablecoins={supportedStablecoins}/>}
         <input type="text" onChange={captureInput} />
         <button onClick={createWithdrawTransaction(amount)}>Withdraw {amount} sDAI receiving {selectedCoin}</button>
-        <p>Slippage: {slippage}</p>
+        <p>Slippage: {slippage.toFixed(2)}%</p>
     </div>
 }
