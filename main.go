@@ -25,8 +25,8 @@ const OPT_CHAINID = 10
 
 type (
 	PositionPostParams struct {
-		Stablecoin constants.Stablecoin `json:"stablecoin" validate:"required"`
-		Address    string               `json:"address" validate:"required,address"`
+		// Stablecoin constants.Stablecoin `json:"stablecoin" validate:"required"`
+		Address string `json:"address" validate:"required,address"`
 	}
 
 	SlippagePostParams struct {
@@ -156,7 +156,7 @@ func main() {
 	})
 
 	app.Get("/main/price", func(c fiber.Ctx) error {
-		number, err := ethClient.SdkDomain.GetPrice(constants.USDC)
+		number, err := ethClient.SdkDomain.GetPrice(constants.DAI)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -175,6 +175,22 @@ func main() {
 		})
 	})
 
+	app.Get("/main/supportedStablecoins", func(c fiber.Ctx) error {
+		stablecoins, err := ethClient.SdkDomain.GetSupportedStablecoins()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
+		}
+		return c.JSON(stablecoins)
+	})
+
+	app.Get("/opt/supportedStablecoins", func(c fiber.Ctx) error {
+		stablecoins, err := optClient.SdkDomain.GetSupportedStablecoins()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
+		}
+		return c.JSON(stablecoins)
+	})
+
 	app.Post("/main/position", func(c fiber.Ctx) error {
 		params := new(PositionPostParams)
 		if err := json.Unmarshal(c.Body(), params); err != nil {
@@ -190,7 +206,7 @@ func main() {
 
 		addr := common.HexToAddress(params.Address)
 
-		number, err := ethClient.SdkDomain.GetPosition(params.Stablecoin, addr)
+		number, err := ethClient.SdkDomain.GetPosition(constants.DAI, addr)
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -215,7 +231,7 @@ func main() {
 
 		addr := common.HexToAddress(params.Address)
 
-		number, err := optClient.SdkDomain.GetPosition(params.Stablecoin, addr)
+		number, err := optClient.SdkDomain.GetPosition(constants.USDC, addr)
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -245,7 +261,7 @@ func main() {
 			})
 		}
 
-		slippage, err := ethClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, 18))
+		slippage, _, _, err := ethClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, 18))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -276,7 +292,7 @@ func main() {
 			})
 		}
 
-		slippage, err := optClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, 18))
+		slippage, _, _, err := optClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, 18))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
