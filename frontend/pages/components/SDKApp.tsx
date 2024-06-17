@@ -25,7 +25,7 @@ export default function SDKApp(props: any) {
             {baseUri && <>
                 {true && <SDKStats baseUri={baseUri} />}
                 {true && <SDKDeposit baseUri={baseUri} />}
-                {false && <SDKWithdraw baseUri={baseUri} />}
+                {true && <SDKWithdraw baseUri={baseUri} />}
             </>}
         </div>
     )
