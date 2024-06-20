@@ -180,7 +180,17 @@ func main() {
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
-		return c.JSON(stablecoins)
+
+		stablecoinArray := make([]fiber.Map, 0, 10)
+
+		for _, sc := range stablecoins {
+			stablecoinArray = append(stablecoinArray, fiber.Map{
+				"symbol":   string(sc),
+				"address":  constants.StablecoinDetails[ETH_CHAINID][sc].Address,
+				"decimals": constants.StablecoinDetails[ETH_CHAINID][sc].Decimals,
+			})
+		}
+		return c.JSON(stablecoinArray)
 	})
 
 	app.Get("/opt/supportedStablecoins", func(c fiber.Ctx) error {
@@ -188,7 +198,17 @@ func main() {
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
-		return c.JSON(stablecoins)
+
+		stablecoinArray := make([]fiber.Map, 0, 10)
+
+		for _, sc := range stablecoins {
+			stablecoinArray = append(stablecoinArray, fiber.Map{
+				"symbol":   string(sc),
+				"address":  constants.StablecoinDetails[OPT_CHAINID][sc].Address,
+				"decimals": constants.StablecoinDetails[OPT_CHAINID][sc].Decimals,
+			})
+		}
+		return c.JSON(stablecoinArray)
 	})
 
 	app.Post("/main/position", func(c fiber.Ctx) error {
@@ -304,6 +324,18 @@ func main() {
 
 		return c.JSON(fiber.Map{
 			"slippage": slippage,
+		})
+	})
+
+	app.Get("/main/vaultAddress", func(c fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"address": ethClient.Config.VaultAddress,
+		})
+	})
+
+	app.Get("/opt/vaultAddress", func(c fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"address": optClient.Config.VaultAddress,
 		})
 	})
 

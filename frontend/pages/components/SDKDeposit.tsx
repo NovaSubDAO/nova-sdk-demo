@@ -1,6 +1,7 @@
 import { InputHTMLAttributes, useEffect, useState } from "react"
-import { useAccount, useSendTransaction } from "wagmi"
-import SelectStablecoin from "./SelectStablecoin"
+import { useAccount, useSendTransaction, useWriteContract } from "wagmi"
+import SelectStablecoin, { Stablecoin } from "./SelectStablecoin"
+import TOKEN_ABI from "./tokenAbi"
 
 interface CalldataResponse {
     calldata: {
@@ -18,12 +19,13 @@ interface SDKDepositProps {
 export default function SDKDeposit(props: SDKDepositProps) {
     const account = useAccount()
     const transactor = useSendTransaction()
+    const { writeContract } = useWriteContract()
 
     const [slippage, setSlippage] = useState<number>(0)
     const [amount, setAmount] = useState<number>(0)
-    const [selectedCoin, setSelectedCoin] = useState<string>("")
+    const [selectedCoin, setSelectedCoin] = useState<Stablecoin>({symbol: "", address: "", decimals: 0})
     const [price, setPrice] = useState<number>(0)
-    const [supportedStablecoins, setSupportedStablecoins] = useState<string[]>([])
+    const [supportedStablecoins, setSupportedStablecoins] = useState<Stablecoin[]>([])
 
     useEffect(() => {
         fetch(`${props.baseUri}/supportedStablecoins`).then(data => data.json()).then(data => {
@@ -49,6 +51,17 @@ export default function SDKDeposit(props: SDKDepositProps) {
 
     function captureInput(evt: Parameters<NonNullable<InputHTMLAttributes<HTMLInputElement>['onChange']>>[0]) {
         setAmount(parseFloat(evt.target.value) || 0)
+    }
+
+    async function setApproval(amount: number) {
+        const vaultAddr = await fetch(`${props.baseUri}/vaultAddress`).then(data => data.json()).then(data => data.address)
+        console.log(vaultAddr, selectedCoin.address, TOKEN_ABI, amount * 10**selectedCoin.decimals)
+        writeContract({
+            abi: TOKEN_ABI,
+            address: selectedCoin.address as any,
+            functionName: "approve",
+            args: [vaultAddr, BigInt(amount * 10**selectedCoin.decimals)]
+        })
     }
 
     function createDepositTransaction(amount: number) {
@@ -82,7 +95,8 @@ export default function SDKDeposit(props: SDKDepositProps) {
         <h3>Deposit</h3>
         {supportedStablecoins && <SelectStablecoin onSelect={setSelectedCoin} supportedStablecoins={supportedStablecoins}/>}
         <input type="text" onChange={captureInput} />
-        <button onClick={createDepositTransaction(amount)}>Deposit {amount} {selectedCoin} for sDAI</button>
+        {selectedCoin && <button onClick={() => setApproval(amount)}>Approve {amount} {selectedCoin.symbol}</button>}
+        {selectedCoin && <button onClick={() => createDepositTransaction(amount)}>Deposit {amount} {selectedCoin.symbol} for sDAI</button>}
         <p>Slippage: {slippage.toFixed(2)}%</p>
     </div>
 }

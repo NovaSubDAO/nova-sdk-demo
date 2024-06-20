@@ -1,6 +1,7 @@
 import { InputHTMLAttributes, useEffect, useState } from "react"
 import { useAccount, useSendTransaction } from "wagmi"
-import SelectStablecoin from "./SelectStablecoin"
+import SelectStablecoin, { Stablecoin } from "./SelectStablecoin"
+import TOKEN_ABI from "./tokenAbi"
 
 interface CalldataResponse {
     calldata: {
@@ -19,11 +20,11 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
     const account = useAccount()
     const transactor = useSendTransaction()
 
-    const [selectedCoin, setSelectedCoin] = useState<string>("")
+    const [selectedCoin, setSelectedCoin] = useState<Stablecoin>({symbol: "", address: "", decimals: 0})
     const [slippage, setSlippage] = useState<number>(0)
     const [amount, setAmount] = useState<number>(0)
     const [price, setPrice] = useState<number>(0)
-    const [supportedStablecoins, setSupportedStablecoins] = useState<string[]>([])
+    const [supportedStablecoins, setSupportedStablecoins] = useState<Stablecoin[]>([])
 
     useEffect(() => {
         fetch(`${props.baseUri}/supportedStablecoins`).then(data => data.json()).then(data => {
@@ -50,6 +51,18 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
 
     function captureInput(evt: Parameters<NonNullable<InputHTMLAttributes<HTMLInputElement>['onChange']>>[0]) {
         setAmount(parseFloat(evt.target.value) || 0)
+    }
+
+    async function setApproval(amount: number) {
+        // NOTE: this should be for sDAI
+        const vaultAddr = await fetch(`${props.baseUri}/vaultAddress`).then(data => data.json()).then(data => data.address)
+        console.log(vaultAddr, selectedCoin.address, TOKEN_ABI, amount * 10**selectedCoin.decimals)
+        /*writeContract({
+            abi: TOKEN_ABI,
+            address: selectedCoin.address,
+            method: "approve",
+            args: [vaultAddr, BigInt(amount * 10**selectedCoin.decimals)]
+        })*/
     }
 
     function createWithdrawTransaction(amount: number) {
@@ -83,7 +96,8 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
         <h3>Withdraw</h3>
         {supportedStablecoins && <SelectStablecoin onSelect={setSelectedCoin} supportedStablecoins={supportedStablecoins}/>}
         <input type="text" onChange={captureInput} />
-        <button onClick={createWithdrawTransaction(amount)}>Withdraw {amount} sDAI receiving {selectedCoin}</button>
+        {false && selectedCoin && <button onClick={() => setApproval(amount)}>Approve {amount} sDAI</button>}
+        {selectedCoin && <button onClick={() => createWithdrawTransaction(amount)}>Withdraw {amount} sDAI receiving {selectedCoin.symbol}</button>}
         <p>Slippage: {slippage.toFixed(2)}%</p>
     </div>
 }

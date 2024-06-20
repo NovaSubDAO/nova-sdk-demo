@@ -18,9 +18,15 @@ const STABLECOINS = [
     }
 ]
 
+export interface Stablecoin {
+    symbol: string,
+    address: string,
+    decimals: number
+}
+
 interface SelectStablecoinProps {
-    onSelect: (stablecoin: string) => void,
-    supportedStablecoins: string[]
+    onSelect: (stablecoin: Stablecoin) => void,
+    supportedStablecoins: Stablecoin[]
 }
 
 export default function SelectStablecoin(props: SelectStablecoinProps) {
@@ -33,9 +39,9 @@ export default function SelectStablecoin(props: SelectStablecoinProps) {
     return (
         <div>
             <div style={({display: "flex", flexBasis: "row", justifyContent: "space-around"})}>
-                {STABLECOINS.filter(coin => (props.supportedStablecoins || []).includes(coin.name)).map((coin) => {
+                {STABLECOINS.filter(coin => (props.supportedStablecoins.map(c => c.symbol) || []).includes(coin.name)).map((coin) => {
                     return (
-                        <div key={coin.name} onClick={() => props.onSelect(coin.name)}>
+                        <div key={coin.name} onClick={() => props.onSelect(props.supportedStablecoins.find(c => c.symbol === coin.name)!)}>
                             <img src={coin.icon} alt={coin.name} height="22px"/>
                         </div>
                     )
