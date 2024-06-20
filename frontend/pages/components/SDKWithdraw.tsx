@@ -76,7 +76,7 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
                 body: JSON.stringify({
                     amount: formatUnits(parseUnits(amount.toString(), selectedCoin.decimals), selectedCoin.decimals),
                     from: account.address,
-                    token: selectedCoin
+                    token: selectedCoin.symbol
                 })
             }).then(res => res.json()).then(data => ({calldata: JSON.parse(data.calldata)})) as CalldataResponse
 

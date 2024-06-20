@@ -75,7 +75,7 @@ export default function SDKDeposit(props: SDKDepositProps) {
                 body: JSON.stringify({
                     amount: formatUnits(parseUnits(amount.toString(), selectedCoin.decimals), selectedCoin.decimals),
                     from: account.address,
-                    token: selectedCoin
+                    token: selectedCoin.symbol
                 })
             }).then(res => res.json()).then(data => ({calldata: JSON.parse(data.calldata)})) as CalldataResponse
 
@@ -97,7 +97,7 @@ export default function SDKDeposit(props: SDKDepositProps) {
         {supportedStablecoins && <SelectStablecoin onSelect={setSelectedCoin} supportedStablecoins={supportedStablecoins}/>}
         <input type="text" onChange={captureInput} />
         {selectedCoin && <button onClick={() => setApproval(amount)}>Approve {amount} {selectedCoin.symbol}</button>}
-        {selectedCoin && <button onClick={() => createDepositTransaction(amount)}>Deposit {amount} {selectedCoin.symbol} for sDAI</button>}
+        {selectedCoin && <button onClick={createDepositTransaction(amount)}>Deposit {amount} {selectedCoin.symbol} for sDAI</button>}
         <p>Slippage: {slippage.toFixed(2)}%</p>
     </div>
 }
