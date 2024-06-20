@@ -1,7 +1,7 @@
 import { InputHTMLAttributes, useEffect, useState } from "react"
 import { useAccount, useSendTransaction, useWriteContract } from "wagmi"
 import SelectStablecoin, { Stablecoin } from "./SelectStablecoin"
-import TOKEN_ABI from "./tokenAbi"
+import TOKEN_ABI from "../../abi/tokenAbi"
 
 interface CalldataResponse {
     calldata: {

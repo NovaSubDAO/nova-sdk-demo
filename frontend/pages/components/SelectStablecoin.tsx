@@ -39,7 +39,7 @@ export default function SelectStablecoin(props: SelectStablecoinProps) {
     return (
         <div>
             <div style={({display: "flex", flexBasis: "row", justifyContent: "space-around"})}>
-                {STABLECOINS.filter(coin => (props.supportedStablecoins.map(c => c.symbol) || []).includes(coin.name)).map((coin) => {
+                {STABLECOINS.filter(coin => (props.supportedStablecoins || []).map(c => c.symbol).includes(coin.name)).map((coin) => {
                     return (
                         <div key={coin.name} onClick={() => props.onSelect(props.supportedStablecoins.find(c => c.symbol === coin.name)!)}>
                             <img src={coin.icon} alt={coin.name} height="22px"/>
