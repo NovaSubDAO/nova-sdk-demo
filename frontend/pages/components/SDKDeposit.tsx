@@ -2,6 +2,7 @@ import { InputHTMLAttributes, useEffect, useState } from "react"
 import { useAccount, useSendTransaction, useWriteContract } from "wagmi"
 import SelectStablecoin, { Stablecoin } from "./SelectStablecoin"
 import TOKEN_ABI from "../../abi/tokenAbi"
+import { formatUnits, parseUnits } from "viem"
 
 interface CalldataResponse {
     calldata: {
@@ -60,7 +61,7 @@ export default function SDKDeposit(props: SDKDepositProps) {
             abi: TOKEN_ABI,
             address: selectedCoin.address as any,
             functionName: "approve",
-            args: [vaultAddr, BigInt(amount * 10**selectedCoin.decimals)]
+            args: [vaultAddr, parseUnits(amount.toString(), selectedCoin.decimals)]
         })
     }
 
@@ -72,7 +73,7 @@ export default function SDKDeposit(props: SDKDepositProps) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    amount: amount.toString(),
+                    amount: formatUnits(parseUnits(amount.toString(), selectedCoin.decimals), selectedCoin.decimals),
                     from: account.address,
                     token: selectedCoin
                 })

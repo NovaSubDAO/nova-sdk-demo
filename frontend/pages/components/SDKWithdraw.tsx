@@ -2,6 +2,7 @@ import { InputHTMLAttributes, useEffect, useState } from "react"
 import { useAccount, useSendTransaction } from "wagmi"
 import SelectStablecoin, { Stablecoin } from "./SelectStablecoin"
 import TOKEN_ABI from "../../abi/tokenAbi"
+import { formatUnits, parseUnits } from "viem"
 
 interface CalldataResponse {
     calldata: {
@@ -73,7 +74,7 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    amount: amount.toString(),
+                    amount: formatUnits(parseUnits(amount.toString(), selectedCoin.decimals), selectedCoin.decimals),
                     from: account.address,
                     token: selectedCoin
                 })
