@@ -232,7 +232,7 @@ func main() {
 			return c.SendString(err.Error())
 		}
 		return c.JSON(fiber.Map{
-			"position": util.ToDecimal(number, 18).String(),
+			"position": util.ToDecimal(number, constants.StablecoinDetails[ETH_CHAINID][constants.DAI].Decimals).String(),
 		})
 	})
 
@@ -257,7 +257,7 @@ func main() {
 			return c.SendString(err.Error())
 		}
 		return c.JSON(fiber.Map{
-			"position": util.ToDecimal(number, 18).String(),
+			"position": util.ToDecimal(number, constants.StablecoinDetails[OPT_CHAINID][constants.USDC].Decimals).String(),
 		})
 	})
 
