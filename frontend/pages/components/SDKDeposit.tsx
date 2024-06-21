@@ -73,11 +73,13 @@ export default function SDKDeposit(props: SDKDepositProps) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    amount: formatUnits(parseUnits(amount.toString(), selectedCoin.decimals), selectedCoin.decimals),
+                    amount: formatUnits(parseUnits(amount.toString(), selectedCoin.decimals), 0),
                     from: account.address,
                     token: selectedCoin.symbol
                 })
             }).then(res => res.json()).then(data => ({calldata: JSON.parse(data.calldata)})) as CalldataResponse
+
+            console.log(formatUnits(parseUnits(amount.toString(), selectedCoin.decimals), 0))
 
             console.log(data)
 

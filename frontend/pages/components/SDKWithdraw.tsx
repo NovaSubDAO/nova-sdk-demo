@@ -74,7 +74,7 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    amount: formatUnits(parseUnits(amount.toString(), selectedCoin.decimals), selectedCoin.decimals),
+                    amount: formatUnits(parseUnits(amount.toString(), selectedCoin.decimals), 0),
                     from: account.address,
                     token: selectedCoin.symbol
                 })
