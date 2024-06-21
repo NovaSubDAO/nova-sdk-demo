@@ -135,7 +135,7 @@ func main() {
 
 	app.Get("/main/canonicalPrice", func(c fiber.Ctx) error {
 		// NOTE: Get the canonical price from Mainnet.
-		price, err := ethClient.SdkDomain.GetSDaiPrice()
+		price, err := ethClient.GetSDaiPrice()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -146,7 +146,7 @@ func main() {
 
 	app.Get("/opt/canonicalPrice", func(c fiber.Ctx) error {
 		// NOTE: Get the canonical price from Optimism.
-		price, err := optClient.SdkDomain.GetSDaiPrice()
+		price, err := optClient.GetSDaiPrice()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -156,7 +156,7 @@ func main() {
 	})
 
 	app.Get("/main/price", func(c fiber.Ctx) error {
-		number, err := ethClient.SdkDomain.GetPrice(constants.DAI)
+		number, err := ethClient.GetPrice(constants.DAI)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -166,7 +166,7 @@ func main() {
 	})
 
 	app.Get("/opt/price", func(c fiber.Ctx) error {
-		number, err := optClient.SdkDomain.GetPrice(constants.USDC)
+		number, err := optClient.GetPrice(constants.USDC)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -176,7 +176,7 @@ func main() {
 	})
 
 	app.Get("/main/supportedStablecoins", func(c fiber.Ctx) error {
-		stablecoins, err := ethClient.SdkDomain.GetSupportedStablecoins()
+		stablecoins, err := ethClient.GetSupportedStablecoins()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -194,7 +194,7 @@ func main() {
 	})
 
 	app.Get("/opt/supportedStablecoins", func(c fiber.Ctx) error {
-		stablecoins, err := optClient.SdkDomain.GetSupportedStablecoins()
+		stablecoins, err := optClient.GetSupportedStablecoins()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(err.Error())
 		}
@@ -226,7 +226,7 @@ func main() {
 
 		addr := common.HexToAddress(params.Address)
 
-		number, err := ethClient.SdkDomain.GetPosition(constants.DAI, addr)
+		number, err := ethClient.GetPosition(constants.DAI, addr)
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -251,7 +251,7 @@ func main() {
 
 		addr := common.HexToAddress(params.Address)
 
-		number, err := optClient.SdkDomain.GetPosition(constants.USDC, addr)
+		number, err := optClient.GetPosition(constants.USDC, addr)
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -283,7 +283,7 @@ func main() {
 
 		tokenDecimals := constants.StablecoinDetails[ETH_CHAINID][params.InputToken].Decimals
 
-		slippage, _, _, err := ethClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, tokenDecimals))
+		slippage, _, _, err := ethClient.GetSlippage(params.InputToken, util.ToWei(amount, tokenDecimals))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -316,7 +316,7 @@ func main() {
 
 		tokenDecimals := constants.StablecoinDetails[OPT_CHAINID][params.InputToken].Decimals
 
-		slippage, _, _, err := optClient.SdkDomain.GetSlippage(params.InputToken, util.ToWei(amount, tokenDecimals))
+		slippage, _, _, err := optClient.GetSlippage(params.InputToken, util.ToWei(amount, tokenDecimals))
 		if err != nil {
 			c.SendStatus(500)
 			return c.SendString(err.Error())
@@ -329,13 +329,13 @@ func main() {
 
 	app.Get("/main/vaultAddress", func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"address": ethClient.Config.VaultAddress,
+			"address": ethClient.GetConfig().VaultAddress,
 		})
 	})
 
 	app.Get("/opt/vaultAddress", func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"address": optClient.Config.VaultAddress,
+			"address": optClient.GetConfig().VaultAddress,
 		})
 	})
 
@@ -363,7 +363,7 @@ func main() {
 			})
 		}
 
-		calldata, err := ethClient.SdkDomain.CreateDepositTransaction(
+		calldata, err := ethClient.CreateDepositTransaction(
 			params.Token,
 			from,
 			big.NewInt(int64(amount)),
@@ -403,7 +403,7 @@ func main() {
 			})
 		}
 
-		calldata, err := optClient.SdkDomain.CreateDepositTransaction(
+		calldata, err := optClient.CreateDepositTransaction(
 			params.Token,
 			from,
 			big.NewInt(int64(amount)),
@@ -443,7 +443,7 @@ func main() {
 
 		from := common.HexToAddress(params.From)
 
-		calldata, err := ethClient.SdkDomain.CreateWithdrawTransaction(
+		calldata, err := ethClient.CreateWithdrawTransaction(
 			params.Token,
 			from,
 			big.NewInt(int64(amount)),
@@ -482,7 +482,7 @@ func main() {
 
 		from := common.HexToAddress(params.From)
 
-		calldata, err := optClient.SdkDomain.CreateWithdrawTransaction(
+		calldata, err := optClient.CreateWithdrawTransaction(
 			params.Token,
 			from,
 			big.NewInt(int64(amount)),
