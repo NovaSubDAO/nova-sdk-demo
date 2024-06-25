@@ -356,8 +356,8 @@ func main() {
 
 		from := common.HexToAddress(params.From)
 
-		amount, err := strconv.ParseUint(params.Amount, 10, 64)
-		if err != nil {
+		amount, success := big.NewInt(0).SetString(params.Amount, 10)
+		if !success {
 			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
 				Message: "Invalid amount",
 			})
@@ -366,7 +366,7 @@ func main() {
 		calldata, err := ethClient.CreateDepositTransaction(
 			params.Token,
 			from,
-			big.NewInt(int64(amount)),
+			amount,
 			big.NewInt(REFERRAL_CODE),
 		)
 
@@ -396,8 +396,8 @@ func main() {
 
 		from := common.HexToAddress(params.From)
 
-		amount, err := strconv.ParseUint(params.Amount, 10, 64)
-		if err != nil {
+		amount, success := big.NewInt(0).SetString(params.Amount, 10)
+		if !success {
 			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
 				Message: "Invalid amount",
 			})
@@ -406,7 +406,7 @@ func main() {
 		calldata, err := optClient.CreateDepositTransaction(
 			params.Token,
 			from,
-			big.NewInt(int64(amount)),
+			amount,
 			big.NewInt(REFERRAL_CODE),
 		)
 
