@@ -35,15 +35,16 @@ export default function SDKWithdraw(props: SDKWithdrawProps) {
     }, [props.baseUri])
 
     useEffect(() => {
-        fetch(`${props.baseUri}/slippage`, {
+        selectedCoin && fetch(`${props.baseUri}/slippage`, {
             method: "POST",
             body: JSON.stringify({
                 amount: amount.toString(),
                 address: account.address,
                 // FIXME: should be outputToken
-                inputToken: selectedCoin
+                inputToken: selectedCoin.symbol
             })
         }).then(data => data.json()).then(data => {
+            console.log(data)
             setSlippage(parseFloat(data.slippage))
         }).catch(() => {
             console.error("Failed to fetch slippage, defaulting to zero.")
