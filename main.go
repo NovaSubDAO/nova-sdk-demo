@@ -434,8 +434,9 @@ func main() {
 			return MakeErrors(errs)
 		}
 
-		amount, err := strconv.ParseUint(params.Amount, 10, 64)
-		if err != nil {
+		amount, success := big.NewInt(0).SetString(params.Amount, 10)
+		if !success {
+			log.Println("Failed to parse amount")
 			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
 				Message: "Invalid amount",
 			})
@@ -446,7 +447,7 @@ func main() {
 		calldata, err := ethClient.CreateWithdrawTransaction(
 			params.Token,
 			from,
-			big.NewInt(int64(amount)),
+			amount,
 			big.NewInt(REFERRAL_CODE),
 		)
 
@@ -473,8 +474,9 @@ func main() {
 			return MakeErrors(errs)
 		}
 
-		amount, err := strconv.ParseUint(params.Amount, 10, 64)
-		if err != nil {
+		amount, success := big.NewInt(0).SetString(params.Amount, 10)
+		if !success {
+			log.Println("Failed to parse amount")
 			return c.Status(fiber.StatusBadRequest).JSON(GlobalErrorHandlerResp{
 				Message: "Invalid amount",
 			})
@@ -485,7 +487,7 @@ func main() {
 		calldata, err := optClient.CreateWithdrawTransaction(
 			params.Token,
 			from,
-			big.NewInt(int64(amount)),
+			amount,
 			big.NewInt(REFERRAL_CODE),
 		)
 
