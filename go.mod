@@ -4,7 +4,7 @@ go 1.22.4
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/NovaSubDAO/nova-sdk/go v0.0.0-20240620163547-2aec2604a39f // indirect
+	github.com/NovaSubDAO/nova-sdk/go v0.0.0-20240626090943-59fad7146166 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/bits-and-blooms/bitset v1.10.0 // indirect
